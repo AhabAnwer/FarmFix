@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmFix - Plant Disease Recognition</title>
+    <link rel="icon" href="../static/images/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #1b5e20;
+            --accent-color: #81c784;
+            --text-light: #f1f8e9;
+            --text-dark: #263238;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        body {
+            background-image: url('../static/images/background1.jpg');
+            background-size: cover;  
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            padding: 0.8rem 1rem;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-brand img {
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand:hover img {
+            transform: rotate(15deg);
+        }
+
+        .carousel-item {
+            width: 100vw;
+            height: 95vh;
+            color: white;
+            background-size: 100% 100%;
+            animation: changeFrame 20s linear infinite;
+        }
+
+        @keyframes changeFrame {
+            0% {
+                background-image: url('../static/images/crop_background1.jpg');
+            }
+            25% {
+                background-image: url('../static/images/crop_background2.jpg');
+            }
+            50% {
+                background-image: url('../static/images/crop_background3.jpg');
+            }
+            75% {
+                background-image: url('../static/images/crop_background4.jpg');
+            }
+            100% {
+                background-image: url('../static/images/crop_background1.jpg');
+            }
+        }
+
+        .carousel-text-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            backdrop-filter: blur(3px);
+            align-items: center;
+            flex-direction: column;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 2rem;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .carousel-text-title {
+            font-weight: bold;
+            font-size: 72px;
+            text-shadow: 4px 4px 4px #565257;
+            margin-top: 2rem;
+            animation: slideDown 1.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .form-box {
+            margin: auto;
+            text-align: center;
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            flex-direction: column;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        form {
+            margin: auto;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        form h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .input-box {
+            margin: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-box input[type="file"] {
+            padding: 10px;
+            border: 2px dashed var(--accent-color);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .input-box input[type="file"]:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(129, 199, 132, 0.2);
+        }
+
+        .input-box button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .input-box button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #388e3c, #2e7d32);
+        }
+
+        .result-container {
+            margin: 2rem auto;
+            width: 100%;
+            max-width: 1200px;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            animation: fadeIn 0.5s ease-in-out;
+            pointer-events: auto;
+        }
+
+        .result-box {
+            margin: auto;
+            height: 400px;
+            width: 90%;
+            max-width: 1000px;
+            display: flex;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .result-img-container {
+            width: 30%;
+            height: 80%;
+            margin: auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .result-img-container:hover {
+            transform: scale(1.03);
+        }
+
+        .result-text {
+            width: 60%;
+            margin: auto;
+            height: 80%;
+            border-radius: 15px;
+            background-color: white;
+            color: black;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-text h3 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .result-text p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .result-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .result-image:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .carousel-text-title {
+                font-size: 54px;
+            }
+            .result-box {
+                flex-direction: column;
+                height: auto;
+                padding: 2rem;
+            }
+            .result-img-container,
+            .result-text {
+                width: 90%;
+                margin: 1rem auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel-text-title {
+                font-size: 40px;
+            }
+            form {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Add styles for overlay and result box */
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            z-index: 90;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .close-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .close-btn:hover {
+            background-color: #1b5e20;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .loading {
+            display: none;
+            margin: 10px auto;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* File upload styling improvement */
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            border: 2px dashed var(--accent-color);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(129, 199, 132, 0.2);
+        }
+
+        .file-upload-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-name-display {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            font-style: italic;
+        }
+
+        .image-preview {
+            max-width: 150px;
+            max-height: 100px;
+            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="../static/images/logo.svg" alt="FarmFix Logo" width="40" height="40" class="d-inline-block align-text-top">
+                FarmFix
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="carousel-text-wrapper">
+                    <h1 class="carousel-text-title animate__animated animate__fadeInDown">Plant Disease Recognition</h1>
+                    <div class="form-box">
+                        <form action="/upload/" method="POST" enctype="multipart/form-data" id="uploadForm">
+                            <h1><i class="fas fa-leaf me-2"></i>Upload Image</h1>
+                            <div class="input-box">
+                                <div class="file-upload-wrapper">
+                                    <label for="imageUpload" class="file-upload-label">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                        <span>Click to select an image file</span>
+                                        <span class="file-name-display" id="fileNameDisplay">No file selected</span>
+                                    </label>
+                                    <input type="file" accept="image/png, image/jpeg" name="img" id="imageUpload" class="file-upload-input" required>
+                                </div>
+                                <img id="imagePreview" class="image-preview" src="#" alt="Image preview">
+                            </div>
+                            <div class="loading" id="loadingIndicator"></div>
+                            <div class="input-box">
+                                <button type="submit" id="uploadButton" class="btn btn-success">
+                                    <i class="fas fa-upload me-2"></i>Analyze Plant
+                                </button>
+                            </div>
+                        </form>
+                        
+                        {% if result %}
+                        <div class="result-overlay" id="resultOverlay"></div>
+                        <div class="result-container" id="resultContainer">
+                            <div class="result-box">
+                                <div class="result-img-container">
+                                    <img src="{{imagepath}}" alt="uploaded image" class="result-image">
+                                </div>
+                                <div class="result-text">
+                                    <h3>
+                                        <i class="fas fa-leaf me-2"></i>{{prediction['name']}}
+                                    </h3>
+                                    <p>
+                                        <strong><i class="fas fa-virus me-2"></i>Cause:</strong> {{prediction['cause']}}
+                                    </p>
+                                    <p>
+                                        <strong><i class="fas fa-prescription-bottle-alt me-2"></i>Treatment:</strong> {{prediction['cure']}}
+                                    </p>
+                                    <button class="btn btn-success mt-3" id="closeResultBtn" onclick="closeResult()">
+                                        <i class="fas fa-times me-2"></i>Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show loading indicator when form is submitted
+        document.getElementById('uploadForm').addEventListener('submit', function() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        });
+
+        // Preview uploaded image
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            if (event.target.files.length > 0) {
+                const file = event.target.files[0];
+                const fileName = file.name;
+                document.getElementById('fileNameDisplay').textContent = fileName;
+                
+                // Create image preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imagePreview = document.getElementById('imagePreview');
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('fileNameDisplay').textContent = 'No file selected';
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        });
+        
+        // Function to close result modal
+        function closeResult() {
+            // Hide the result container and overlay
+            const resultContainer = document.getElementById('resultContainer');
+            const resultOverlay = document.getElementById('resultOverlay');
+            
+            if (resultContainer) {
+                resultContainer.style.display = 'none';
+            }
+            
+            if (resultOverlay) {
+                resultOverlay.style.display = 'none';
+            }
+            
+            // Reload the page to reset the form
+            window.location.href = window.location.pathname;
+        }
+
+        // Add event listener to close button if it exists
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButton = document.getElementById('closeResultBtn');
+            if (closeButton) {
+                closeButton.addEventListener('click', closeResult);
+            }
+            
+            // Add overlay click event if it exists
+            const resultOverlay = document.getElementById('resultOverlay');
+            if (resultOverlay) {
+                resultOverlay.addEventListener('click', closeResult);
+            }
+        });
+    </script>
+</body>
+</html>
